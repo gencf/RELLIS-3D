@@ -2,23 +2,22 @@ CUDNN:
   BENCHMARK: true
   DETERMINISTIC: false
   ENABLED: true
-GPUS: (0,)
-OUTPUT_DIR: 'output_combined'
+GPUS: (0,1)
+OUTPUT_DIR: 'output'
 LOG_DIR: 'log'
 WORKERS: 4
 PRINT_FREQ: 10
 
 DATASET:
   DATASET: rellis
-  ROOT: "/home/furkan/RELLIS-3D/benchmarks/HRNet-Semantic-Segmentation-HRNet-OCR/Rellis-3D"
+  ROOT: /home/usl/Datasets/rellis/
   TEST_SET: 'val.lst'
-  TEST_SET2: 'rugd_val.lst'
-  TRAIN_SET: 'combined_train.lst'
+  TRAIN_SET: 'train.lst'
   NUM_CLASSES: 19
 MODEL:
   NAME: seg_hrnet_ocr
   NUM_OUTPUTS: 2
-  PRETRAINED: "/home/furkan/RELLIS-3D/benchmarks/HRNet-Semantic-Segmentation-HRNet-OCR/pretrained_models/hrnetv2_w48_imagenet_pretrained.pth"
+  PRETRAINED: "/path/to/HRNet-Semantic-Segmentation-HRNet-OCR/pretrained_models/hrnetv2_w48_imagenet_pretrained.pth"
   EXTRA:
     FINAL_CONV_KERNEL: 1
     STAGE1:
@@ -76,8 +75,8 @@ LOSS:
   BALANCE_WEIGHTS: [0.4, 1]
 TRAIN:
   IMAGE_SIZE:
-  - 512
-  - 320
+  - 1024
+  - 640
   BASE_SIZE: 1920
   BATCH_SIZE_PER_GPU: 4
   SHUFFLE: true
@@ -99,6 +98,6 @@ TEST:
   - 1920
   - 1200
   BASE_SIZE: 1920
-  BATCH_SIZE_PER_GPU: 1
+  BATCH_SIZE_PER_GPU: 4
   FLIP_TEST: false
   MULTI_SCALE: false

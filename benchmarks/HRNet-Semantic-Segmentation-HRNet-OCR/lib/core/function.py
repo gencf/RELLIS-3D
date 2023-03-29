@@ -160,7 +160,7 @@ def validate(config, testloader, model, writer_dict):
                 )
 
             if idx % 10 == 0:
-                print(idx)
+                print("Validate: [{}/{}]".format(idx, len(testloader)))
 
             loss = losses.mean()
             if dist.is_distributed():
@@ -179,10 +179,10 @@ def validate(config, testloader, model, writer_dict):
         res = confusion_matrix[..., i].sum(0)
         tp = np.diag(confusion_matrix[..., i])
         IoU_array = (tp / np.maximum(1.0, pos + res - tp))
-        print(IoU_array)
+        # print(IoU_array)
         mean_IoU = IoU_array.mean()
-        if dist.get_rank() <= 0:
-            logging.info('{} {} {}'.format(i, IoU_array, mean_IoU))
+        # if dist.get_rank() <= 0:
+        #     logging.info('{} {} {}'.format(i, IoU_array, mean_IoU))
 
     writer = writer_dict['writer']
     global_steps = writer_dict['valid_global_steps']
@@ -263,7 +263,7 @@ def test(config, test_dataset, testloader, model,
             pred_np = pred.cpu().numpy()
             b,_,_,_ = pred.shape
             for i in range(b):
-                sv_path = os.path.join(config.OUTPUT_DIR, 'hrnet',name[i][:5],'pylon_camera_node_label_id')
+                sv_path = os.path.join(config.OUTPUT_DIR, 'hrnet',name[i],'pylon_camera_node_label_id')
                 if not os.path.exists(sv_path):
                     os.makedirs(sv_path)
                 _, file_name = os.path.split(name[i])
@@ -275,7 +275,7 @@ def test(config, test_dataset, testloader, model,
                 pred_img = Image.fromarray(pred_img)
                 pred_img.save(data_path)
                 if viz:
-                    sv_path = os.path.join(config.OUTPUT_DIR, 'hrnet',name[i][:5],'pylon_camera_node_label_color')
+                    sv_path = os.path.join(config.OUTPUT_DIR, 'hrnet',name[i],'pylon_camera_node_label_color')
                     if not os.path.exists(sv_path):
                         os.makedirs(sv_path)
                     _, file_name = os.path.split(name[i])

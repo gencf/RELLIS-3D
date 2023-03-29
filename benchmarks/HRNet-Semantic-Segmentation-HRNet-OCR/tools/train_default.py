@@ -185,33 +185,11 @@ def main():
     test_sampler = get_sampler(test_dataset)
     testloader = torch.utils.data.DataLoader(
         test_dataset,
-        batch_size=config.TEST.BATCH_SIZE_PER_GPU,
+        batch_size=batch_size,
         shuffle=False,
         num_workers=config.WORKERS,
         pin_memory=True,
         sampler=test_sampler)
-    
-    
-    test_dataset2 = eval('datasets.'+config.DATASET.DATASET)(
-                        root=config.DATASET.ROOT,
-                        list_path=config.DATASET.TEST_SET2,
-                        num_samples=config.TEST.NUM_SAMPLES,
-                        num_classes=config.DATASET.NUM_CLASSES,
-                        multi_scale=False,
-                        flip=False,
-                        ignore_label=config.TRAIN.IGNORE_LABEL,
-                        base_size=config.TEST.BASE_SIZE,
-                        crop_size=test_size,
-                        downsample_rate=1)
-
-    test_sampler2 = get_sampler(test_dataset2)
-    testloader2 = torch.utils.data.DataLoader(
-        test_dataset2,
-        batch_size=config.TEST.BATCH_SIZE_PER_GPU,
-        shuffle=False,
-        num_workers=config.WORKERS,
-        pin_memory=True,
-        sampler=test_sampler2)
 
     # criterion
     if config.LOSS.USE_OHEM:
@@ -267,27 +245,21 @@ def main():
     epoch_iters = np.int(train_dataset.__len__() / 
                         config.TRAIN.BATCH_SIZE_PER_GPU / len(gpus))
         
-    rellis_best_mIoU = 0
-    rellis_best_epoch = 0
-    rugd_best_mIoU = 0
-    rugd_best_epoch = 0
+    best_mIoU = 0
     last_epoch = 0
     if config.TRAIN.RESUME:
         model_state_file = os.path.join(final_output_dir,
                                         'checkpoint.pth.tar')
         if os.path.isfile(model_state_file):
             checkpoint = torch.load(model_state_file, map_location={'cuda:0': 'cpu'})
-            rellis_best_mIoU = checkpoint['rellis_best_mIoU']
-            rugd_best_mIoU = checkpoint['rugd_best_mIoU']
-            rellis_best_epoch = checkpoint['rellis_best_epoch']
-            rugd_best_epoch = checkpoint['rugd_best_epoch']
+            best_mIoU = checkpoint['best_mIoU']
             last_epoch = checkpoint['epoch']
             dct = checkpoint['state_dict']
             
             model.module.model.load_state_dict({k.replace('model.', ''): v for k, v in checkpoint['state_dict'].items() if k.startswith('model.')})
             optimizer.load_state_dict(checkpoint['optimizer'])
-            logger.info("=> loaded checkpoint (epoch {})  Rellis-3D Best mIoU: {},  Rellis-3D Best Epoch: {} \nRUGD Best mIoU: {},  RUGD Best Epoch: {}\n"
-                        .format(checkpoint['epoch'], rellis_best_mIoU, rellis_best_epoch, rugd_best_mIoU, rugd_best_epoch))
+            logger.info("=> loaded checkpoint (epoch {})"
+                        .format(checkpoint['epoch']))
         if distributed:
             torch.distributed.barrier()
 
@@ -315,46 +287,26 @@ def main():
                   epoch_iters, config.TRAIN.LR, num_iters,
                   trainloader, optimizer, model, writer_dict)
 
-        # valid_loss, mean_IoU, IoU_array = validate(config, 
-        #             testloader, model, writer_dict)
-        rellis_valid_loss, rellis_mean_IoU, rellis_IoU_array = validate(config, 
+        valid_loss, mean_IoU, IoU_array = validate(config, 
                     testloader, model, writer_dict)
-        rugd_valid_loss, rugd_mean_IoU, rugd_IoU_array = validate(config,
-                    testloader2, model, writer_dict)
 
         if args.local_rank <= 0:
-            logger.info('=> saving checkpoint to {}\n'.format(
+            logger.info('=> saving checkpoint to {}'.format(
                 final_output_dir + 'checkpoint.pth.tar'))
-            if rellis_mean_IoU > rellis_best_mIoU:
-                rellis_best_mIoU = rellis_mean_IoU
-                rellis_best_epoch = epoch
-                torch.save(model.module.state_dict(),
-                        os.path.join(final_output_dir, 'rellis_best.pth'))
-                
-            if rugd_mean_IoU > rugd_best_mIoU:
-                rugd_best_mIoU = rugd_mean_IoU
-                rugd_best_epoch = epoch
-                torch.save(model.module.state_dict(),
-                        os.path.join(final_output_dir, 'rugd_best.pth'))
-                
-            msg = 'Rellis-3D Loss: {:.3f}, Rellis-3D MeanIU: {: 4.4f}, Rellis-3D Best_mIoU: {: 4.4f}\n'.format(
-                        rellis_valid_loss, rellis_mean_IoU, rellis_best_mIoU)
-            
-            msg2 = 'RUGD Loss: {:.3f}, RUGD MeanIU: {: 4.4f}, RUGD Best_mIoU: {: 4.4f}\n'.format(
-                        rugd_valid_loss, rugd_mean_IoU, rugd_best_mIoU)
-
-            logging.info(msg)
-            logging.info(msg2)
-
             torch.save({
                 'epoch': epoch+1,
-                'rellis_best_mIoU': rellis_best_mIoU,
-                'rugd_best_mIoU': rugd_best_mIoU,
-                'rellis_best_epoch': rellis_best_epoch,
-                'rugd_best_epoch': rugd_best_epoch,
+                'best_mIoU': best_mIoU,
                 'state_dict': model.module.state_dict(),
                 'optimizer': optimizer.state_dict(),
             }, os.path.join(final_output_dir,'checkpoint.pth.tar'))
+            if mean_IoU > best_mIoU:
+                best_mIoU = mean_IoU
+                torch.save(model.module.state_dict(),
+                        os.path.join(final_output_dir, 'best.pth'))
+            msg = 'Loss: {:.3f}, MeanIU: {: 4.4f}, Best_mIoU: {: 4.4f}'.format(
+                        valid_loss, mean_IoU, best_mIoU)
+            logging.info(msg)
+            logging.info(IoU_array)
 
     if args.local_rank <= 0:
 
