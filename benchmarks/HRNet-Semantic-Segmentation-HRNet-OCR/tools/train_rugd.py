@@ -342,7 +342,7 @@ def main():
                         os.path.join(final_output_dir, 'rugd_best.pth'))
                 logging.info("Saving RUGD best model with mIoU: {: 4.4f} at epoch: {}".format(rugd_best_mIoU, rugd_best_epoch))
                 
-            msg = '\nRellis-3D Loss: {:.3f},  MeanIoU: {: 4.4f},  Best mIoU: {: 4.4f},  Best Epoch: {}'.format(
+            msg = '\nRellis-3D Loss: {:.3f},  Rellis-3D MeanIoU: {: 4.4f},  Rellis-3D Best mIoU: {: 4.4f},  Rellis-3D Best Epoch: {}'.format(
                         rellis_valid_loss, rellis_mean_IoU, rellis_best_mIoU, rellis_best_epoch)
             
             msg2 = '\nRUGD Loss: {:.3f},  RUGD MeanIoU: {: 4.4f},  RUGD Best mIoU: {: 4.4f},  RUGD Best Epoch: {}\n'.format(

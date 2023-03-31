@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 
-rugd = '/home/furkan/Downloads/RUGD_Original'
+rugd = '/home/furkan/Downloads/Rellis-3D Downloads/RUGD_Original'
 images = os.path.join(rugd, 'RUGD_frames-with-annotations')
 labels = os.path.join(rugd, 'RUGD_annotations')
 size = (1920, 1200)
@@ -24,19 +24,20 @@ for folder in os.listdir(labels):
 
         label = cv2.imread(os.path.join(labels, folder, file), cv2.IMREAD_COLOR)   
         pixels = cv2.cvtColor(label, cv2.COLOR_BGR2RGB)
-        pixels[np.all(pixels == (255, 229, 204), axis=-1)] = [108,64,20]
-        pixels[np.all(pixels == (255, 128, 0), axis=-1)] = [110,22,138]
-        pixels[np.all(pixels == (153, 76, 0), axis=-1)] = [108,64,20]
-        pixels[np.all(pixels == (102, 102, 0), axis=-1)] = [110,22,138]
-        pixels[np.all(pixels == (0, 255, 128), axis=-1)] = [255,255,0]
-        pixels[np.all(pixels == (0, 102, 102), axis=-1)] = [0,153,153]
-        pixels[np.all(pixels == (153, 204, 255), axis=-1)] = [110,22,138]
-        pixels[np.all(pixels == (102, 255, 255), axis=-1)] = [255,0,0]
-        pixels[np.all(pixels == (101, 101, 11), axis=-1)] = [170,170,170]
-        pixels[np.all(pixels == (114, 85, 47), axis=-1)] = [255,0,127]
+
+        pixels[np.all(pixels == [255, 229, 204], axis=-1)] = [108,64,20]
+        pixels[np.all(pixels == [255, 128, 0], axis=-1)] = [110,22,138]
+        pixels[np.all(pixels == [153, 76, 0], axis=-1)] = [108,64,20]
+        pixels[np.all(pixels == [102, 102, 0], axis=-1)] = [110,22,138]
+        pixels[np.all(pixels == [0, 255, 128], axis=-1)] = [255,255,0]
+        pixels[np.all(pixels == [0, 102, 102], axis=-1)] = [0,153,153]
+        pixels[np.all(pixels == [153, 204, 255], axis=-1)] = [110,22,138]
+        pixels[np.all(pixels == [102, 255, 255], axis=-1)] = [255,0,0]
+        pixels[np.all(pixels == [101, 101, 11], axis=-1)] = [170,170,170]
+        pixels[np.all(pixels == [114, 85, 47], axis=-1)] = [255,0,127]
         
         label_color = cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR)
-        label_color = cv2.resize(label_color, size, interpolation=cv2.INTER_LINEAR)
+        label_color = cv2.resize(label_color, size, interpolation=cv2.INTER_NEAREST)
         cv2.imwrite(os.path.join(save_dir, folder, "pylon_camera_node_label_color", file), label_color)
         # cv2.imshow("label_color", label_color)
 
@@ -61,17 +62,47 @@ for folder in os.listdir(labels):
         pixels[np.all(pixels == [99,66,34], axis=-1)] = [33, 33, 33]  
         pixels[np.all(pixels == [110,22,138], axis=-1)] = [34, 34, 34]  
 
+        label_id = cv2.resize(pixels, size, interpolation=cv2.INTER_NEAREST)
         label_id = cv2.cvtColor(pixels, cv2.COLOR_RGB2GRAY)
-        label_id = cv2.resize(label_id, size, interpolation=cv2.INTER_LINEAR)
+        cv2.imwrite(os.path.join(save_dir, folder, "pylon_camera_node_label_id", file), label_id)
+
+        # print(label_id)
         # cv2.imshow("label_id", label_id)
+        
+        # print(np.unique(label_id))
+        # label_mapping = {0: 0,
+        #                  1: 0,
+        #                  3: 1,
+        #                  4: 2,
+        #                  5: 3,
+        #                  6: 4,
+        #                  7: 5,
+        #                  8: 6,
+        #                  9: 7,
+        #                  10: 8,
+        #                  12: 9,
+        #                  15: 10,
+        #                  17: 11,
+        #                  18: 12,
+        #                  19: 13,
+        #                  23: 14,
+        #                  27: 15,
+        #                  29: 1,
+        #                  30: 1,
+        #                  31: 16,
+        #                  32: 4,
+        #                  33: 17,
+        #                  34: 18}  
+        # temp = label_id.copy()
+        # for k, v in label_mapping.items():
+        #     label_id[temp == k] = v
+
         # print(label_id)
         # print(image.shape)
         # print(label_color.shape)
         # print(label_id.shape)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
-        # exit()
 
-        cv2.imwrite(os.path.join(save_dir, folder, "pylon_camera_node_label_id", file), label_id)
 
 

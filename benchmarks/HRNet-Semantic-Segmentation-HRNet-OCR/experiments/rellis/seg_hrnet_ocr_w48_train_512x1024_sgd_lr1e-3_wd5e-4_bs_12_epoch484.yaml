@@ -10,8 +10,8 @@ PRINT_FREQ: 10
 
 DATASET:
   DATASET: rellis
-  ROOT: "/home/furkan/RELLIS-3D/benchmarks/HRNet-Semantic-Segmentation-HRNet-OCR/Rellis-3D"
-  TEST_SET: 'val.lst'
+  ROOT: "/home/furkan/RELLIS-3D/benchmarks/HRNet-Semantic-Segmentation-HRNet-OCR/Rellis-3D/"
+  TEST_SET: 'rellis_val.lst'
   TEST_SET2: 'rugd_val.lst'
   TRAIN_SET: 'combined_train.lst'
   NUM_CLASSES: 19

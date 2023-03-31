@@ -158,9 +158,12 @@ def validate(config, testloader, model, writer_dict):
                     config.DATASET.NUM_CLASSES,
                     config.TRAIN.IGNORE_LABEL
                 )
-
-            if idx % 10 == 0:
+                
+            if idx == 0:
                 print("Validate: [{}/{}]".format(idx, len(testloader)))
+
+            if (idx+1) % 10 == 0:
+                print("Validate: [{}/{}]".format((idx+1), len(testloader)))
 
             loss = losses.mean()
             if dist.is_distributed():

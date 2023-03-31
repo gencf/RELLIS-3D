@@ -12,6 +12,8 @@ total = rellis_test + rellis_train + rellis_val
 
 for folder in os.listdir(rugd):
     print("\nProcessing folder: ", folder)
+    if not os.path.isdir(os.path.join(rugd, folder)):
+        continue
     images = os.path.join(rugd, folder, "pylon_camera_node")
     labels = os.path.join(rugd, folder, "pylon_camera_node_label_id")
     size = len(os.listdir(images))
@@ -24,13 +26,13 @@ for folder in os.listdir(rugd):
     for i, image in enumerate(os.listdir(images)):
         if i < train_size:
             rugd_train.write(os.path.join(folder, "pylon_camera_node", image) + " " + 
-                             os.path.join(folder, "pylon_camera_node_label_id", image))
+                             os.path.join(folder, "pylon_camera_node_label_id", image) + "\n")
         elif i < train_size + test_size:
             rugd_test.write(os.path.join(folder, "pylon_camera_node", image) + " " + 
-                            os.path.join(folder, "pylon_camera_node_label_id", image))
+                            os.path.join(folder, "pylon_camera_node_label_id", image) + "\n")
         else:
             rugd_val.write(os.path.join(folder, "pylon_camera_node", image) + " " + 
-                           os.path.join(folder, "pylon_camera_node_label_id", image))
+                           os.path.join(folder, "pylon_camera_node_label_id", image) + "\n")
 
 rugd_train.close()
 rugd_test.close()
